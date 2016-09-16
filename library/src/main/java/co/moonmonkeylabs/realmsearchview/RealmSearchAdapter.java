@@ -41,6 +41,8 @@ public abstract class RealmSearchAdapter<T extends RealmObject, VH extends Realm
     private Sort sortOrder;
     private String sortKey;
     private String basePredicate;
+    private String queryPredicateKey;
+    private String queryPredicate;
 
     /**
      * Creates a {@link RealmSearchAdapter} with only the filter columnKey. The defaults are:
@@ -54,7 +56,16 @@ public abstract class RealmSearchAdapter<T extends RealmObject, VH extends Realm
             @NonNull Context context,
             @NonNull Realm realm,
             @NonNull String filterKey) {
-        this(context, realm, filterKey, true, Case.INSENSITIVE, Sort.ASCENDING, filterKey, null);
+        this(context, realm, filterKey, true, Case.INSENSITIVE, Sort.ASCENDING, filterKey, null,null,null);
+    }
+
+    public RealmSearchAdapter(
+            @NonNull Context context,
+            @NonNull Realm realm,
+            @NonNull String filterKey,
+            String queryPredicate,
+            String queryPredicateKey) {
+        this(context, realm, filterKey, true, Case.INSENSITIVE, Sort.ASCENDING, filterKey, null,queryPredicate,queryPredicateKey);
     }
 
     /**
@@ -69,7 +80,9 @@ public abstract class RealmSearchAdapter<T extends RealmObject, VH extends Realm
             Case casing,
             Sort sortOrder,
             String sortKey,
-            String basePredicate) {
+            String basePredicate,
+            String queryPredicate,
+            String queryPredicateKey) {
         super(context, null, false, false);
         this.realm = realm;
         this.filterKey = filterKey;
@@ -78,6 +91,8 @@ public abstract class RealmSearchAdapter<T extends RealmObject, VH extends Realm
         this.sortOrder = sortOrder;
         this.sortKey = sortKey;
         this.basePredicate = basePredicate;
+        this.queryPredicate = queryPredicate;
+        this.queryPredicateKey = queryPredicateKey;
 
         clazz = (Class<T>) getTypeArguments(RealmSearchAdapter.class, getClass()).get(0);
     }
@@ -112,6 +127,10 @@ public abstract class RealmSearchAdapter<T extends RealmObject, VH extends Realm
             } else {
                 where = where.beginsWith(filterKey, input, casing);
             }
+        }
+
+        if ((queryPredicate != null) && (queryPredicateKey != null)) {
+          where = where.equalTo(queryPredicateKey,queryPredicate);
         }
 
         if (sortKey == null) {
